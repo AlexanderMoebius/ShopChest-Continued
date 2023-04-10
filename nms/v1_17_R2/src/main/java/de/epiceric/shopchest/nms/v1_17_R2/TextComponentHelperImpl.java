@@ -1,4 +1,4 @@
-package de.epiceric.shopchest.nms.v1_17_1_R1;
+package de.epiceric.shopchest.nms.v1_17_R2;
 
 import de.epiceric.shopchest.nms.TextComponentHelper;
 import net.minecraft.nbt.CompoundTag;

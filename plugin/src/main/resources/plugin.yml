@@ -1,6 +1,6 @@
 # Do not change anything in here unless you know what you're doing!
 
-name: ${project.name}
+name: ${project.parent.name}
 main: de.epiceric.shopchest.ShopChest
 version: ${project.version}
 author: EpicEric

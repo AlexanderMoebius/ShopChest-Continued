@@ -1,4 +1,4 @@
-package de.epiceric.shopchest.nms.v1_17_1_R1;
+package de.epiceric.shopchest.nms.v1_19_R2;
 
 import de.epiceric.shopchest.nms.FakeItem;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
@@ -7,7 +7,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.phys.Vec3;
-import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_19_R2.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -19,11 +19,11 @@ public class FakeItemImpl extends FakeEntityImpl<ItemStack> implements FakeItem 
     private final static EntityDataAccessor<net.minecraft.world.item.ItemStack> DATA_ITEM;
 
     static {
-        try{
+        try {
             final Field dataItemField = ItemEntity.class.getDeclaredField("c"); // DATA_ITEM
             dataItemField.setAccessible(true);
             DATA_ITEM = forceCast(dataItemField.get(null));
-        }catch (ReflectiveOperationException e){
+        } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
     }
@@ -54,7 +54,7 @@ public class FakeItemImpl extends FakeEntityImpl<ItemStack> implements FakeItem 
     }
 
     @Override
-    protected void addSpecificData(List<SynchedEntityData.DataItem<?>> packedItems, ItemStack data) {
-        packedItems.add(new SynchedEntityData.DataItem<>(DATA_ITEM, CraftItemStack.asNMSCopy(data)));
+    protected void addSpecificData(List<SynchedEntityData.DataValue<?>> packedItems, ItemStack data) {
+        packedItems.add(SynchedEntityData.DataValue.create(DATA_ITEM, CraftItemStack.asNMSCopy(data)));
     }
 }

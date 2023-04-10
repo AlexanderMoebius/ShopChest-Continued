@@ -5,20 +5,42 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>de.epiceric</groupId>
-    <artifactId>ShopChest-parent</artifactId>
+    <artifactId>shopchest-parent</artifactId>
     <version>1.14.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
         <module>plugin</module>
-        <module>nms/interface</module>
-        <module>nms/reflection</module>
-        <module>nms/v1_17_R1</module>
-        <module>nms/v1_17_1_R1</module>
-        <module>nms/v1_18_R1</module>
-        <module>nms/v1_18_R2</module>
-        <module>nms/v1_19_R1</module>
     </modules>
+
+    <profiles>
+        <profile>
+            <id>build-nms</id>
+            <activation>
+                <property>
+                    <name>buildNMS</name>
+                </property>
+            </activation>
+            <modules>
+                <module>nms</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>import-nms</id>
+            <activation>
+                <property>
+                    <name>!buildNMS</name>
+                </property>
+            </activation>
+            <repositories>
+                <repository>
+                    <id>github</id>
+                    <name>GitHub Packages</name>
+                    <url>https://maven.pkg.github.com/Flowsqy/ShopChest</url>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
 
     <name>ShopChest</name>
     <url>https://www.spigotmc.org/resources/shopchest.11431/</url>
@@ -43,13 +65,10 @@
 
     <distributionManagement>
         <repository>
-            <id>codemc-releases</id>
-            <url>https://repo.codemc.io/repository/maven-releases/</url>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/Flowsqy/ShopChest</url>
         </repository>
-        <snapshotRepository>
-            <id>codemc-snapshots</id>
-            <url>https://repo.codemc.io/repository/maven-snapshots/</url>
-        </snapshotRepository>
     </distributionManagement>
 
     <properties>
@@ -61,8 +80,14 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
 
-        <!-- Default Spigot version for nms implementation. Must be overridden  -->
-        <spigot.version>defaultVersion</spigot.version>
+        <!-- Avoid the deployment of all artifact  -->
+        <maven.deploy.skip>true</maven.deploy.skip>
+
+        <!-- The NMS assembly classifier -->
+        <nms-classifier>legacy</nms-classifier>
+
+        <!-- Name of the plugin for the final jar -->
+        <buildName>ShopChest</buildName>
     </properties>
 
     <repositories>
@@ -90,11 +115,6 @@
         <repository>
             <id>enginehub-repo</id>
             <url>https://maven.enginehub.org/repo/</url>
-        </repository>
-        <!-- AreaShop repo -->
-        <repository>
-            <id>areashop-repo</id>
-            <url>http://maven.wiefferink.me</url>
         </repository>
     </repositories>
 
@@ -293,41 +313,18 @@
                 <version>1.18.4-SNAPSHOT</version>
             </dependency>
 
-            <!-- Internal nms shaded dependencies -->
+            <!-- Internal nms shaded dependency -->
+            <dependency>
+                <groupId>de.epiceric</groupId>
+                <artifactId>shopchest-nms-all</artifactId>
+                <version>1.0.2</version>
+                <classifier>${nms-classifier}</classifier>
+            </dependency>
             <dependency>
                 <groupId>de.epiceric</groupId>
                 <artifactId>shopchest-nms-interface</artifactId>
                 <version>1.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>de.epiceric</groupId>
-                <artifactId>shopchest-nms-reflection</artifactId>
-                <version>1.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>de.epiceric</groupId>
-                <artifactId>shopchest-nms-v1_17_R1</artifactId>
-                <version>1.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>de.epiceric</groupId>
-                <artifactId>shopchest-nms-v1_17_1_R1</artifactId>
-                <version>1.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>de.epiceric</groupId>
-                <artifactId>shopchest-nms-v1_18_R1</artifactId>
-                <version>1.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>de.epiceric</groupId>
-                <artifactId>shopchest-nms-v1_18_R2</artifactId>
-                <version>1.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>de.epiceric</groupId>
-                <artifactId>shopchest-nms-v1_19_R1</artifactId>
-                <version>1.0.0</version>
+                <scope>provided</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -337,8 +334,13 @@
             <plugins>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-shade-plugin</artifactId>
+                    <artifactId>maven-jar-plugin</artifactId>
                     <version>3.2.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>3.3.0</version>
                     <executions>
                         <execution>
                             <phase>package</phase>
@@ -348,6 +350,7 @@
                         </execution>
                     </executions>
                     <configuration>
+                        <finalName>${buildName}-${project.version}</finalName>
                         <createDependencyReducedPom>false</createDependencyReducedPom>
                         <relocations>
                             <relocation>
@@ -373,7 +376,7 @@
                         </relocations>
                         <filters>
                             <filter>
-                                <artifact>de.epiceric:ShopChest</artifact>
+                                <artifact>de.epiceric:shopchest-plugin</artifact>
                                 <excludeDefaults>false</excludeDefaults>
                                 <includes>
                                     <include>META-INF/**</include>
@@ -407,7 +410,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.2.0</version>
+                    <version>3.4.0</version>
                     <configuration>
                         <doclint>none</doclint>
                     </configuration>
@@ -431,34 +434,20 @@
                     <groupId>net.md-5</groupId>
                     <artifactId>specialsource-maven-plugin</artifactId>
                     <version>1.2.4</version>
-                    <executions>
-                        <execution>
-                            <phase>package</phase>
-                            <goals>
-                                <goal>remap</goal>
-                            </goals>
-                            <id>remap-obf</id>
-                            <configuration>
-                                <srgIn>org.spigotmc:minecraft-server:${spigot.version}:txt:maps-mojang</srgIn>
-                                <reverse>true</reverse>
-                                <remappedDependencies>org.spigotmc:spigot:${spigot.version}:jar:remapped-mojang</remappedDependencies>
-                                <remappedArtifactAttached>true</remappedArtifactAttached>
-                                <remappedClassifierName>remapped-obf</remappedClassifierName>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <phase>package</phase>
-                            <goals>
-                                <goal>remap</goal>
-                            </goals>
-                            <id>remap-spigot</id>
-                            <configuration>
-                                <inputFile>${project.build.directory}/${project.artifactId}-${project.version}-remapped-obf.jar</inputFile>
-                                <srgIn>org.spigotmc:minecraft-server:${spigot.version}:csrg:maps-spigot</srgIn>
-                                <remappedDependencies>org.spigotmc:spigot:${spigot.version}:jar:remapped-obf</remappedDependencies>
-                            </configuration>
-                        </execution>
-                    </executions>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>3.3.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>3.0.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>3.0.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>
